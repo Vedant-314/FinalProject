@@ -7,31 +7,28 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.Toast
+import android.util.Log
+import android.view.View
+import android.widget.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.tasks.Task
 import com.google.firebase.storage.FirebaseStorage
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.lang.Exception
+import com.google.firebase.storage.ListResult
+import com.google.firebase.storage.StorageReference
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class imageGallery : AppCompatActivity() {
 
     lateinit var filepath: Uri
-
-    val picRef= FirebaseStorage.getInstance().reference
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image_gallery)
+
+
 
         val image1=findViewById<Button>(R.id.selectImagebtn)
 
@@ -46,11 +43,7 @@ class imageGallery : AppCompatActivity() {
             uploadFile()
         }
 
-        val view=findViewById<Button>(R.id.viewimage)
 
-        view.setOnClickListener{
-            listFiles()
-        }
     }
 
 
@@ -81,32 +74,6 @@ class imageGallery : AppCompatActivity() {
                     }
         }
     }
-
-    private fun listFiles() = CoroutineScope(Dispatchers.IO).launch {
-        try {
-            val images = picRef.child("image/").listAll()
-            val imageUrls = mutableListOf<String>()
-            for(image in images.result?.items!!) {
-                val url = image.downloadUrl
-                imageUrls.add(url.toString())
-            }
-            withContext(Dispatchers.Main) {
-                val imageAdapter = ImageAdapter(imageUrls)
-                val rvi=findViewById<ImageView>(R.id.ivImage)
-                val recyclerview:RecyclerView=findViewById(R.id.rvImages)
-                rvi.apply {
-                    recyclerview.adapter=imageAdapter
-                    recyclerview.layoutManager=LinearLayoutManager(this@imageGallery)
-
-                }
-            }
-        } catch(e: Exception) {
-            withContext(Dispatchers.Main) {
-                Toast.makeText(this@imageGallery, e.message, Toast.LENGTH_LONG).show()
-            }
-        }
-    }
-
 
 
     private fun startfileChooser(){
